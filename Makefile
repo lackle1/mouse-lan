@@ -9,7 +9,7 @@ BUILD_DIR=build
 # All
 #
 $(BUILD_DIR)main: always $(SRC_DIR)/main.c
-	$(CC) -g -o $(BUILD_DIR)/main $(SRC_DIR)/main.c
+	$(CC) -g -o $(BUILD_DIR)/main $(SRC_DIR)/main.c -lusb-1.0
 
 #
 # Always
