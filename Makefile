@@ -1,18 +1,27 @@
-CC=gcc
+.PHONY: all clean
 
-SRC_DIR=src
-BUILD_DIR=build
-
-.PHONY: all
+program: build/mouse_lan
 
 #
-# All
+# Program
 #
-$(BUILD_DIR)main: always $(SRC_DIR)/main.c
-	$(CC) -g -o $(BUILD_DIR)/main $(SRC_DIR)/main.c -lusb-1.0
+build/mouse_lan: build/main.o build/tools_linux.o
+	gcc -g -o build/mouse_lan build/main.o build/tools_linux.o -lX11
+
+build/main.o: always src/main.c
+	gcc -g -o build/main.o src/main.c -c
+
+build/tools_linux.o: always src/tools_linux.c
+	gcc -g -o build/tools_linux.o src/tools_linux.c -c
 
 #
 # Always
 #
 always:
-	mkdir -p $(BUILD_DIR)
+	mkdir -p build
+
+#
+# Clean
+#
+clean:
+	rm -rf build

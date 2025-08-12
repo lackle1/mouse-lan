@@ -1,1 +1,1 @@
-./build/main
+./build/mouse_lan 0

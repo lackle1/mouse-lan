@@ -1,57 +1,46 @@
+#if defined(_WIN32)
+	#define PLATFORM "Windows"
+	#include <windows.h>
+#elif defined(__linux__)
+	#define PLATFORM "Linux"
+	#include <X11/Xlib.h>
+#else
+	#define PLATFORM "Unknown"
+#endif
+
 #include <stdio.h>
 #include <string.h>
-#include <libusb-1.0/libusb.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-void print_devs(libusb_device **devs)
-{
-	libusb_device *dev;
-	int i = 0, j = 0;
-	uint8_t path[8]; 
+#include "tools.h"
 
-	while ((dev = devs[i++]) != NULL) {
-		struct libusb_device_descriptor desc;
-		int r = libusb_get_device_descriptor(dev, &desc);
-		if (r < 0) {
-			fprintf(stderr, "failed to get device descriptor");
-			return;
-		}
+enum Role {
+	SERVER = 0,
+	CLIENT = 1
+};
 
-		printf("%04x:%04x (bus %d, device %d)",
-			desc.idVendor, desc.idProduct,
-			libusb_get_bus_number(dev), libusb_get_device_address(dev));
-
-		r = libusb_get_port_numbers(dev, path, sizeof(path));
-		if (r > 0) {
-			printf(" path: %d", path[0]);
-			for (j = 1; j < r; j++)
-				printf(".%d", path[j]);
-		}
-		printf("\n");
+int main(int argc, char **argv) {
+    printf("PLATFORM: %s\n", PLATFORM);
+	if (PLATFORM == "Unknown") {
+		printf("ERROR: Unsupported OS");
+		return -1;
 	}
-}
 
-int main(int argc, char** argv) {
-    printf("Hello World!\n");
+	if (argc < 2 || (argv[1][0] != '0' && argv[1][0] != '1')) {
+		printf("Syntax: %s <role>\n0: server, 1: client\n", argv[0]);
+		return -2;
+	}
     
-    libusb_device **devs;
-	int r;
-	ssize_t cnt;
+	enum Role role = argv[1][0] - '0';
 
-	r = libusb_init_context(/*ctx=*/NULL, /*options=*/NULL, /*num_options=*/0);
-	if (r < 0)
-		return r;
-
-	cnt = libusb_get_device_list(NULL, &devs);
-    printf("Device Count %ld\n", cnt);
-	if (cnt < 0){
-		libusb_exit(NULL);
-		return (int) cnt;
+	int width, height;
+	if (!GetDisplayDimensions(&width, &height)) {
+		printf("Opening display failed.\n");
 	}
 
-	print_devs(devs);
-	libusb_free_device_list(devs, 1);
+	printf("Dimensions: %d x %d\n", width, height);
 
-	libusb_exit(NULL);
 	return 0;
 }
 
