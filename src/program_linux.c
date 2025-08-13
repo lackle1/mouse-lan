@@ -1,4 +1,7 @@
+#ifdef __linux__
+
 #include "program.h"
+#include <X11/Xlib.h>
 
 bool GetDisplayDimensions(Display *dpy, int *width, int *height) {
 	int snum = DefaultScreen(dpy);
@@ -8,7 +11,7 @@ bool GetDisplayDimensions(Display *dpy, int *width, int *height) {
 	return true;
 }
 
-int Run() {
+int Run(enum Role role) {
 	Display *dpy;
 	if (!(dpy = XOpenDisplay(NULL))) {
 		printf("Could not open display %s", XDisplayName(NULL));
@@ -33,3 +36,5 @@ int Run() {
 
 	return 0;
 }
+
+#endif

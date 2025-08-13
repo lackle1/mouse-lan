@@ -1,9 +1,7 @@
 #if defined(_WIN32)
 	#define PLATFORM "Windows"
-	#include <windows.h>
 #elif defined(__linux__)
 	#define PLATFORM "Linux"
-	#include <X11/Xlib.h>
 #else
 	#define PLATFORM "Unknown"
 #endif
@@ -14,11 +12,6 @@
 #include <stdbool.h>
 
 #include "program.h"
-
-enum Role {
-	SERVER = 0,
-	CLIENT = 1
-};
 
 int main(int argc, char **argv) {
     printf("PLATFORM: %s\n", PLATFORM);

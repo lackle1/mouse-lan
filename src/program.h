@@ -1,13 +1,12 @@
 #pragma once
 
-#if defined(_WIN32)
-    #include <windows.h>
-#elif defined(__linux__)
-    #include <X11/Xlib.h>
-#endif
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-int Run();
+enum Role {
+	SERVER = 0,
+	CLIENT = 1
+};
+
+int Run(enum Role role);
