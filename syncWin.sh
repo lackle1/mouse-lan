@@ -1,1 +1,1 @@
-rsync -av /mnt/d/coding/mouse-lan/{src,compile_win.bat} /home/lachie/mouse-lan
+rsync -av --no-perms --no-times /mnt/d/coding/mouse-lan/{src,compile_win.bat} /home/lachie/mouse-lan
