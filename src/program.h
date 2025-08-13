@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(_WIN32)
     #include <windows.h>
 #elif defined(__linux__)
@@ -8,4 +10,4 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool GetDisplayDimensions(int *width, int *height);
+int Run();

@@ -1,4 +1,6 @@
-#include "tools.h"
+#ifdef _WIN32 //  Just to prevent windows.h error
+
+#include "program.h"
 #include <windows.h>
 
 bool GetDisplayDimensions(int *width, int *height) {
@@ -7,3 +9,5 @@ bool GetDisplayDimensions(int *width, int *height) {
     
     return true;
 }
+
+#endif

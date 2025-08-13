@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "tools.h"
+#include "program.h"
 
 enum Role {
 	SERVER = 0,
@@ -34,12 +34,7 @@ int main(int argc, char **argv) {
     
 	enum Role role = argv[1][0] - '0';
 
-	int width, height;
-	if (!GetDisplayDimensions(&width, &height)) {
-		printf("Opening display failed.\n");
-	}
-
-	printf("Dimensions: %d x %d\n", width, height);
+	Run();
 
 	return 0;
 }
