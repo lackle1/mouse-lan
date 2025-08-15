@@ -68,7 +68,7 @@ bool create_socket() {
 
     char recv_buf[512];
     int i_snd_res;
-    int recv_buf_len;
+    int recv_buf_len = 512;
 
     // Receive until peer shuts down connection
     do {
@@ -107,6 +107,8 @@ bool create_socket() {
 
     closesocket(client_socket);
     WSACleanup();
+
+    return true;
 }
 
 int run_server(int scr_width, int scr_height) {
