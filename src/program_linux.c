@@ -3,7 +3,7 @@
 #include "program.h"
 #include <X11/Xlib.h>
 
-bool GetDisplayDimensions(Display *dpy, int *width, int *height) {
+bool get_display_dims(Display *dpy, int *width, int *height) {
 	int snum = DefaultScreen(dpy);
 	*width = DisplayWidth(dpy, snum);
 	*height = DisplayHeight(dpy, snum);
@@ -11,7 +11,7 @@ bool GetDisplayDimensions(Display *dpy, int *width, int *height) {
 	return true;
 }
 
-int Run(enum Role role) {
+int run(enum Role role) {
 	Display *dpy;
 	if (!(dpy = XOpenDisplay(NULL))) {
 		printf("Could not open display %s", XDisplayName(NULL));
@@ -19,15 +19,15 @@ int Run(enum Role role) {
 	}
 
 	int width, height;
-	GetDisplayDimensions(dpy, &width, &height);
+	get_display_dims(dpy, &width, &height);
 	printf("Dimensions: %d x %d\n", width, height);
 
-	int x, y, winX, winY;
+	int x, y, win_x, win_y;
 	unsigned int mask;
 	Window window = DefaultRootWindow(dpy);
 	Window what;
 	Window child;
-	if (!XQueryPointer(dpy, window, &what, &child, &x, &y, &winX, &winY, &mask)) {
+	if (!XQueryPointer(dpy, window, &what, &child, &x, &y, &win_x, &win_y, &mask)) {
 		printf("Pointer query failed");
 	}
 	printf("\nx => %d, y => %d\n", x, y);

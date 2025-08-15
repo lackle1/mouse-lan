@@ -9,4 +9,4 @@ enum Role {
 	CLIENT = 1
 };
 
-int Run(enum Role role);
+int run(enum Role role);
