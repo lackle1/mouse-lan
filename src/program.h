@@ -14,6 +14,8 @@
 #define DP_TYPE_MOUSE_INFO	1
 #define DP_TYPE_MSG			2
 
+#define MOUSE_POS_MAX		65535 // uint16 max
+
 #define MOUSE_BTN_LEFT		0b0000001
 #define MOUSE_BTN_MIDDLE	0b0000010
 #define MOUSE_BTN_RIGHT		0b0000100
@@ -34,6 +36,12 @@ typedef struct data_packet_mouse_info {
 	char zero[2];
 } dp_mouse_info;
 #pragma pack(pop)
+
+// Can't be bothered changing things to use this
+// typedef struct vec2 {
+// 	uint16_t x;
+// 	uint16_t y;
+// } vec2;
 
 extern int scr_width, scr_height;
 
