@@ -11,5 +11,10 @@ enum Role {
 	CLIENT = 1
 };
 
+typedef struct {
+	uint8_t type;
+	char data[8];
+} datapacket;
+
 int run(enum Role role);
 bool check_quit();

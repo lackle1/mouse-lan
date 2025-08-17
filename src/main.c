@@ -14,7 +14,7 @@
 #include "program.h"
 
 int main(int argc, char **argv) {
-    printf("PLATFORM: %s\n", PLATFORM);
+    //printf("PLATFORM: %s\n", PLATFORM);
 	if (PLATFORM == "Unknown") {
 		printf("ERROR: Unsupported OS");
 		return -1;

@@ -11,38 +11,37 @@
 
 #define HORIZONTAL_SHIFT 8
 
-void print_adapter(PIP_ADAPTER_ADDRESSES aa)
-{
-	char buf[BUFSIZ];
-	memset(buf, 0, BUFSIZ);
-	WideCharToMultiByte(CP_ACP, 0, aa->FriendlyName, wcslen(aa->FriendlyName), buf, BUFSIZ, NULL, NULL);
-	printf("adapter_name:%s\n", buf);
-}
-
-void print_addr(PIP_ADAPTER_UNICAST_ADDRESS ua) {
+void print_addr_if_lan(PIP_ADAPTER_UNICAST_ADDRESS ua) {
     char ip_str[INET_ADDRSTRLEN];
     DWORD ip_str_len = INET_ADDRSTRLEN;
 
     WSAAddressToString(ua->Address.lpSockaddr, ua->Address.iSockaddrLength, NULL, ip_str, &ip_str_len);
-    
-    // Should be same as what we set it to, but might as well
-    struct sockaddr_in *addr = (struct sockaddr_in*)ua->Address.lpSockaddr;
-    char port_str[6];
-    sprintf(port_str, "%d", ntohs(addr->sin_port));
 
+    const char *lan_start = "192.168.";
+    if (!strncmp(ip_str, lan_start, strlen(lan_start)) == 0) {
+        return;
+    }
     
-    printf("%s:%s\n", ip_str, port_str);
+    // Just returns 0, SERVER_PORT is a little more useful
+    // Don't need to worry about casting because we only got IPv4 addresses
+    // struct sockaddr_in *addr = (struct sockaddr_in*)ua->Address.lpSockaddr;
+    // char port_str[6];
+    // sprintf(port_str, "%d", ntohs(addr->sin_port));
+
+    printf("%s:%s\n", ip_str, SERVER_PORT);
 }
 
 bool print_ip_addr(SOCKET sock) {
     printf("Listening at:\n");
 
-    DWORD rv, size = 0;
+    DWORD rv, flags, size = 0;
     PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
     PIP_ADAPTER_UNICAST_ADDRESS ua;
+
+    flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
     
     // First time is just to get the required buffer length
-    rv = GetAdaptersAddresses(AF_INET, 0, NULL, NULL, &size);
+    rv = GetAdaptersAddresses(AF_INET, flags, NULL, NULL, &size);
     if (rv != ERROR_BUFFER_OVERFLOW) {
         printf("Getting adapters addresses failed...");
         return false;
@@ -50,16 +49,17 @@ bool print_ip_addr(SOCKET sock) {
     adapter_addresses = (PIP_ADAPTER_ADDRESSES)malloc(size);
 
     // Now we actually store the data
-    rv = GetAdaptersAddresses(AF_INET, 0, NULL, adapter_addresses, &size);
+    rv = GetAdaptersAddresses(AF_INET, flags, NULL, adapter_addresses, &size);
     if (rv != ERROR_SUCCESS) {
         printf("Getting adapters addresses failed...");
         free(adapter_addresses);
+        return false;
     }
 
     for (aa = adapter_addresses; aa != NULL; aa = aa->Next) {
-        print_adapter(aa);
+        
         for (ua = aa->FirstUnicastAddress; ua != NULL; ua = ua->Next) {
-            print_addr(ua);
+            print_addr_if_lan(ua);
         }
     }
 
