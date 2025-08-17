@@ -125,9 +125,10 @@ bool initialise_server(SOCKET *socketptr) {
     return true;
 }
 
-// Generates data packet containing mouse information
-void make_data_packet(char *buffer, int buf_len) {
-
+void create_mouse_data_packet(dp *packet) {
+    packet->type = DP_TYPE_MSG;
+    char *msg = "yo";
+    memcpy(packet->data, msg, sizeof(msg));
 }
 
 bool run_server() {
@@ -140,8 +141,6 @@ bool run_server() {
     printf("Connected!\n");
 
     int i_res;
-    char buffer[512];
-    int buf_len = 512;
     int i_snd_res;
 
     struct fd_set socket_set;
@@ -149,45 +148,62 @@ bool run_server() {
     FD_SET(socket, &socket_set);
     struct timeval tv;
 
-    tv.tv_sec = 5;
-    tv.tv_usec = 5000;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
 
-    // Receive until peer shuts down connection
+    dp packet;
     do {
+        // Reset the fd_set (select() modifies it)
+        FD_ZERO(&socket_set);
+        FD_SET(socket, &socket_set);
+
         // Receive data (if any)
         i_res = select(0, &socket_set, NULL, NULL, &tv);
         if (i_res > 0) {
-            i_res = recv(socket, buffer, buf_len, 0);
+            i_res = recv(socket, (char*)&packet, DP_SIZE_BYTES, 0);
             if (i_res > 0) {
-                printf("Bytes received: %d\n", i_res);
+                process_packet(&packet);
+            }
+            else {
+                printf("Client disconnected. Closing connection...\n");
+                break;
             }
         }
         else if (i_res == 0) {
-            printf("Client disconnected. Closing connection...\n");
+            // No data to read
         }
         else {
-            printf("recv failed: %d\n", WSAGetLastError());
+            printf("Error checking socket status: %d\n", WSAGetLastError());
             closesocket(socket);
             WSACleanup();
             return false;
         }
 
         // Send data
-        make_data_packet(buffer, buf_len);
-        i_snd_res = send(socket, buffer, buf_len, 0);
+        create_mouse_data_packet(&packet);
+        i_snd_res = send(socket, (char*)&packet, DP_SIZE_BYTES, 0);
         if (i_snd_res  == SOCKET_ERROR) {
             printf("Error sending data: %d\n", WSAGetLastError());
             closesocket(socket);
             WSACleanup();
             return false;
         }
-        printf("Bytes sent: %d\n", i_snd_res);
-        
-    } while (i_res > 0 && !check_quit());
 
-    // Don't need shutdown because we are just closing the socket, we don't need a graceful disconnect
+        Sleep(5);
+    } while (!check_quit());
+
+    // Shutdown
+    i_res = shutdown(socket, SD_BOTH);
+    if (i_res == SOCKET_ERROR) {
+        printf("Error shutting down: %d\n", WSAGetLastError());
+        closesocket(socket);
+        WSACleanup();
+        return false;
+    }
     closesocket(socket);
     WSACleanup();
+
+    printf("Socket successfully shutdown.");
 
     return true;
 }

@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 		return -2;
 	}
     
-	enum Role role = argv[1][0] - '0';
+	int role = argv[1][0] - '0';
 
 	run(role);
 

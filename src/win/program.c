@@ -40,8 +40,22 @@ int blah(int scr_width, int scr_height) {
     }
 }
 
+void process_packet(dp *packet) {
+    switch (packet->type) {
+        case DP_TYPE_MOUSE_INFO:
+            handle_mouse_info((struct dp_mouse_info*)packet);
+            break;
+        case DP_TYPE_MSG:
+            printf("Incoming message: %s\n", packet->data);
+            break;
+        default:
+            printf("Unknown packet received...\n");
+            break;
+    }
+}
+
 bool check_quit() {
-    if (GetAsyncKeyState('q')) {
+    if (GetAsyncKeyState('Q') & 0x8001) {
         printf("Quitting...\n");
         return true;
     }
@@ -49,7 +63,7 @@ bool check_quit() {
     return false;
 }
 
-int run(enum Role role) {
+int run(int role) {
     int scr_width = GetSystemMetrics(SM_CXSCREEN);
     int scr_height = GetSystemMetrics(SM_CYSCREEN);
 
@@ -61,7 +75,7 @@ int run(enum Role role) {
     }
 
     int res = 0;
-    if (role == SERVER) {
+    if (role == ROLE_TYPE_SERVER) {
         res = run_server();
     }
     else{

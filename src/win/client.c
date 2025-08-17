@@ -9,7 +9,7 @@
 
 #define HORIZONTAL_SHIFT 8
 
-void set_cursor_pos(char *buf, int buf_len) {
+void handle_mouse_info(dp_mouse_info *packet) {
 
 }
 
@@ -63,29 +63,29 @@ bool run_client(char* server_addr) {
     printf("Connected!\n");
 
     int i_res;
-    char recv_buf[512];
-    int recv_buf_len = 512;
-    
-    int i_snd_res;
-    const char *snd_data = "Thank you!";
+    dp snd_packet;
+    snd_packet.type = DP_TYPE_MSG;
+    memcpy(snd_packet.data, "Dankje", 7); //  Size of string +1 for the null terminator
 
     // Send an initial bit of data
-    i_res = send(socket, snd_data, (int)strlen(snd_data), 0);
+    i_res = send(socket, (char*)&snd_packet, DP_SIZE_BYTES, 0);
     if (i_res == SOCKET_ERROR) {
         printf("Send failed: %d\n", WSAGetLastError());
         closesocket(socket);
         WSACleanup();
         return false;
     }
-    printf("Bytes sent: %d\n", i_res);
 
+    dp packet;
     do {
-        i_res = recv(socket, recv_buf, recv_buf_len, 0);
+        memset(&packet, 0, sizeof(packet));
+        i_res = recv(socket, (char*)&packet, DP_SIZE_BYTES, 0);
         if (i_res > 0) {
-            set_cursor_pos(recv_buf, recv_buf_len);
+            process_packet(&packet);
         }
         else if (i_res == 0) {
             printf("Server disconnected. Closing connection...\n");
+            break;
         }
         else {
             printf("recv failed: %d\n", WSAGetLastError());
@@ -95,9 +95,18 @@ bool run_client(char* server_addr) {
         }
     } while (i_res > 0 && !check_quit());
 
-    // Don't need shutdown because we are just closing the socket, we don't need a graceful disconnect
+    // Shutdown
+    i_res = shutdown(socket, SD_BOTH);
+    if (i_res == SOCKET_ERROR) {
+        printf("Error shutting down: %d\n", WSAGetLastError());
+        closesocket(socket);
+        WSACleanup();
+        return false;
+    }
     closesocket(socket);
     WSACleanup();
+
+    printf("Socket successfully shutdown.");
 
     return true;
 }
