@@ -18,6 +18,8 @@
 #define MOUSE_BTN_MIDDLE	0b0000010
 #define MOUSE_BTN_RIGHT		0b0000100
 
+#define HORIZONTAL_SHIFT 8
+
 #pragma pack(push, DP_SIZE_BYTES)
 typedef struct data_packet {
 	uint8_t type;
@@ -33,5 +35,7 @@ typedef struct data_packet_mouse_info {
 } dp_mouse_info;
 #pragma pack(pop)
 
-int run(enum Role role);
+extern int scr_width, scr_height;
+
+int run(int role, char* ip);
 bool check_quit();

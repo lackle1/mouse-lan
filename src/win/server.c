@@ -9,8 +9,6 @@
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 
-#define HORIZONTAL_SHIFT 8
-
 void print_addr_if_lan(PIP_ADAPTER_UNICAST_ADDRESS ua) {
     char ip_str[INET_ADDRSTRLEN];
     DWORD ip_str_len = INET_ADDRSTRLEN;
@@ -125,13 +123,44 @@ bool initialise_server(SOCKET *socketptr) {
     return true;
 }
 
-void create_mouse_data_packet(dp *packet) {
-    packet->type = DP_TYPE_MSG;
-    char *msg = "yo";
-    memcpy(packet->data, msg, sizeof(msg));
+// For each axis, returns a value from 0 to 65535 (max size of uint16)
+bool get_mouse_pos(uint16_t *ret_x, uint16_t *ret_y) {
+    POINT p;
+    HWND hwnd = GetForegroundWindow();
+    RECT win_rect;
+    uint16_t x, y;
+
+    if (!GetCursorPos(&p)) {
+        printf("\nError getting cursor position: %d\n", GetLastError());
+        return false;
+    }
+
+    if (!ScreenToClient(hwnd, &p)) {
+        printf("\nScreen to client failed. Error: %d\n", GetLastError());
+        return false;
+    }
+
+    GetWindowRect(hwnd, &win_rect);
+    x = p.x + win_rect.left + HORIZONTAL_SHIFT;
+    y = p.y + win_rect.top;
+    
+    *ret_x = (x * 65535) / scr_width;
+    *ret_y = (y * 65535) / scr_height;
+
+    return true;
 }
 
-bool run_server() {
+bool create_mouse_data_packet(dp_mouse_info *packet) {
+    packet->type = DP_TYPE_MOUSE_INFO;
+    
+    if (!get_mouse_pos(&packet->x, &packet->y)) {
+        return false;
+    }
+    
+    return true;
+}
+
+bool run_server(int scr_width, int scr_height) {
     
     SOCKET socket;
     if (!initialise_server(&socket)) {
@@ -152,6 +181,7 @@ bool run_server() {
     tv.tv_usec = 0;
 
     dp packet;
+    dp_mouse_info mouse_info;
     do {
         // Reset the fd_set (select() modifies it)
         FD_ZERO(&socket_set);
@@ -180,8 +210,11 @@ bool run_server() {
         }
 
         // Send data
-        create_mouse_data_packet(&packet);
-        i_snd_res = send(socket, (char*)&packet, DP_SIZE_BYTES, 0);
+        if (!create_mouse_data_packet(&mouse_info)) {
+            printf("Error generating mouse info packet.\n");
+            break;
+        }
+        i_snd_res = send(socket, (char*)&mouse_info, DP_SIZE_BYTES, 0);
         if (i_snd_res  == SOCKET_ERROR) {
             printf("Error sending data: %d\n", WSAGetLastError());
             closesocket(socket);
@@ -189,7 +222,7 @@ bool run_server() {
             return false;
         }
 
-        Sleep(5);
+        Sleep(50);
     } while (!check_quit());
 
     // Shutdown
@@ -203,7 +236,7 @@ bool run_server() {
     closesocket(socket);
     WSACleanup();
 
-    printf("Socket successfully shutdown.");
+    printf("Socket successfully shutdown.\n");
 
     return true;
 }

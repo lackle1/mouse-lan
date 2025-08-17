@@ -8,6 +8,8 @@
 
 #define HORIZONTAL_SHIFT 8
 
+int scr_width, scr_height;
+
 int blah(int scr_width, int scr_height) {
     POINT p;
     HWND hwnd = GetForegroundWindow();
@@ -63,9 +65,9 @@ bool check_quit() {
     return false;
 }
 
-int run(int role) {
-    int scr_width = GetSystemMetrics(SM_CXSCREEN);
-    int scr_height = GetSystemMetrics(SM_CYSCREEN);
+int run(int role, char *ip) {
+    scr_width = GetSystemMetrics(SM_CXSCREEN);
+    scr_height = GetSystemMetrics(SM_CYSCREEN);
 
     WSADATA wsa_data;
     int i_res = WSAStartup(MAKEWORD(2,2), &wsa_data);
@@ -76,10 +78,10 @@ int run(int role) {
 
     int res = 0;
     if (role == ROLE_TYPE_SERVER) {
-        res = run_server();
+        res = run_server(scr_width, scr_height);
     }
     else{
-        res = run_client("192.168.1.18");
+        res = run_client(ip);
     }
     return res;
 }

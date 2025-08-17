@@ -7,10 +7,14 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#define HORIZONTAL_SHIFT 8
-
 void handle_mouse_info(dp_mouse_info *packet) {
+    int x = (packet->x * scr_width) / 65535;
+    int y = (packet->y * scr_height) / 65535;
+    if (!SetCursorPos(x, y)) {
+        printf("Error setting cursor position: %d\n", GetLastError());
+    }
 
+    printf("Set cursor position to (%d, %d)\n", x, y);
 }
 
 bool initialise_client(char *server_addr, SOCKET *socketptr) {
@@ -106,7 +110,7 @@ bool run_client(char* server_addr) {
     closesocket(socket);
     WSACleanup();
 
-    printf("Socket successfully shutdown.");
+    printf("Socket successfully shutdown.\n");
 
     return true;
 }

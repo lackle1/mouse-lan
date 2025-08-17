@@ -7,10 +7,6 @@
 #endif
 
 #include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-
 #include "program.h"
 
 int main(int argc, char **argv) {
@@ -27,7 +23,7 @@ int main(int argc, char **argv) {
     
 	int role = argv[1][0] - '0';
 
-	run(role);
+	run(role, argv[2]);
 
 	return 0;
 }
