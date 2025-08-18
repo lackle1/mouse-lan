@@ -10,9 +10,9 @@
 void handle_mouse_info(dp_mouse_info *packet) {
     int x = (packet->x * scr_width) / MOUSE_POS_MAX;
     int y = (packet->y * scr_height) / MOUSE_POS_MAX;
-    // if (!SetCursorPos(x, y)) {
-    //     printf("Error setting cursor position: %d\n", GetLastError());
-    // }
+    if (!SetCursorPos(x, y)) {
+        printf("Error setting cursor position: %d\n", GetLastError());
+    }
 
     printf("Set cursor position to (%d, %d)\n", x, y);
 }
