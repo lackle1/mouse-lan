@@ -10,38 +10,6 @@
 
 int scr_width, scr_height;
 
-int blah(int scr_width, int scr_height) {
-    POINT p;
-    HWND hwnd = GetForegroundWindow();
-    RECT win_rect;
-    int x, y;
-    float normalised_x, normalised_y;
-
-    printf("Tracking mouse position. CTRL+C to exit.\n");
-    while(true) {
-        if (!GetCursorPos(&p)) {
-            printf("\nError getting cursor position: %d\n", GetLastError());
-            continue;
-        }
-
-        if (!ScreenToClient(hwnd, &p)) {
-            printf("\nScreen to client failed. Error: %d\n", GetLastError());
-            continue;
-        }
-
-        GetWindowRect(hwnd, &win_rect);
-        x = p.x + win_rect.left + HORIZONTAL_SHIFT;
-        y = p.y + win_rect.top;
-        
-        normalised_x = (float)x / scr_width;
-        normalised_y = (float)y / scr_height;
-        
-        printf("\rMouse Position: %f, %f       ", normalised_x, normalised_y); // + a bunch of spaces to get rid of any numbers leftover from before
-
-        Sleep(10);
-    }
-}
-
 void process_packet(dp *packet) {
     switch (packet->type) {
         case DP_TYPE_MOUSE_INFO:
@@ -65,7 +33,7 @@ bool check_quit() {
     return false;
 }
 
-int run(int role, char *ip) {
+int run(int role, char *parameter) {
     scr_width = GetSystemMetrics(SM_CXSCREEN);
     scr_height = GetSystemMetrics(SM_CYSCREEN);
 
@@ -78,10 +46,10 @@ int run(int role, char *ip) {
 
     int res = 0;
     if (role == ROLE_TYPE_SERVER) {
-        res = run_server(scr_width, scr_height);
+        res = run_server(parameter);
     }
     else{
-        res = run_client(ip);
+        res = run_client(parameter);
     }
     return res;
 }

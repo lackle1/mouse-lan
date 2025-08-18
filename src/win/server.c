@@ -9,7 +9,7 @@
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 
-uint16_t last_pos_x, last_pos_y;
+int32_t last_pos_x, last_pos_y;    // int32 to avoid overflow
 
 void print_addr_if_lan(PIP_ADAPTER_UNICAST_ADDRESS ua) {
     char ip_str[INET_ADDRSTRLEN];
@@ -130,7 +130,7 @@ bool get_mouse_pos(uint16_t *ret_x, uint16_t *ret_y) {
     POINT p;
     HWND hwnd = GetForegroundWindow();
     RECT win_rect;
-    uint16_t delta_x, delta_y, centre_x = scr_width / 2, centre_y = scr_height / 2;
+    int32_t delta_x, delta_y, centre_x = scr_width / 2, centre_y = scr_height / 2;     // int32 because integer will overflow otherwise
 
     if (!GetCursorPos(&p)) {
         printf("\nError getting cursor position: %d\n", GetLastError());
@@ -145,16 +145,24 @@ bool get_mouse_pos(uint16_t *ret_x, uint16_t *ret_y) {
     GetWindowRect(hwnd, &win_rect);
     delta_x = p.x + win_rect.left + HORIZONTAL_SHIFT - centre_x;
     delta_y = p.y + win_rect.top - centre_y;
-    printf("Delta: (x:%d, y:%d)\n", delta_x, delta_y);
     
     delta_x = (delta_x * MOUSE_POS_MAX) / scr_width;
     delta_y = (delta_y * MOUSE_POS_MAX) / scr_height;
+    
+    last_pos_x += delta_x;
+    last_pos_y += delta_y;
 
-    *ret_x = last_pos_x += delta_x;
-    *ret_y = last_pos_y += delta_y;
+    // Clamp values
+    if (last_pos_x < 0) last_pos_x = 0;
+    if (last_pos_x >= MOUSE_POS_MAX) last_pos_x = MOUSE_POS_MAX - 1;
+    if (last_pos_y < 0) last_pos_y = 0;
+    if (last_pos_y >= MOUSE_POS_MAX) last_pos_y = MOUSE_POS_MAX - 1;
 
-    if (!SetCursorPos(*ret_x, *ret_y)) {
-        printf("Error setting cursor position: %d\n", GetLastError());
+    *ret_x = last_pos_x;
+    *ret_y = last_pos_y;
+    
+    if (!SetCursorPos(centre_x, centre_y)) {
+        printf("Error centring cursor position: %d\n", GetLastError());
         return false;
     }
 
@@ -171,7 +179,13 @@ bool create_mouse_data_packet(dp_mouse_info *packet) {
     return true;
 }
 
-bool run_server(int scr_width, int scr_height) {
+bool run_server(char *parameter) {
+
+    int update_delay = atoi(parameter);
+    if (update_delay <= 0 || update_delay > 5000) {
+        printf("%s is an invalid parameter: must be an integer between 1 and 5000 inclusive.\n", parameter);
+        return false;
+    }
     
     SOCKET socket;
     if (!initialise_server(&socket)) {
@@ -233,7 +247,7 @@ bool run_server(int scr_width, int scr_height) {
             return false;
         }
 
-        Sleep(50);
+        Sleep(update_delay);
     } while (!check_quit());
 
     // Shutdown

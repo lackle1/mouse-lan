@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	if (argc < 2 || (argv[1][0] != '0' && argv[1][0] != '1')) {
-		printf("Syntax: %s <role>\n0: server, 1: client\n", argv[0]);
+	if (argc < 3 || (argv[1][0] != '0' && argv[1][0] != '1')) {
+		printf("Syntax: %s <role> <parameter>\n<role> - 0: server, 1: client\n<parameter> - update speed (ms) for server, or IPv4 address of server for client", argv[0]);
 		return -2;
 	}
     
