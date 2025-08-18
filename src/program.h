@@ -20,8 +20,6 @@
 #define MOUSE_BTN_MIDDLE	0b0000010
 #define MOUSE_BTN_RIGHT		0b0000100
 
-#define HORIZONTAL_SHIFT 8
-
 #pragma pack(push, DP_SIZE_BYTES)
 typedef struct data_packet {
 	uint8_t type;

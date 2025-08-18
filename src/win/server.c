@@ -9,6 +9,10 @@
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 
+// Quick and easy bandaid
+#define HORIZONTAL_OFFSET 8
+#define VERTICAL_OFFSET 1
+
 int32_t last_pos_x, last_pos_y;    // int32 to avoid overflow
 
 void print_addr_if_lan(PIP_ADAPTER_UNICAST_ADDRESS ua) {
@@ -143,8 +147,8 @@ bool get_mouse_pos(uint16_t *ret_x, uint16_t *ret_y) {
     }
 
     GetWindowRect(hwnd, &win_rect);
-    delta_x = p.x + win_rect.left + HORIZONTAL_SHIFT - centre_x;
-    delta_y = p.y + win_rect.top - centre_y;
+    delta_x = p.x + win_rect.left + HORIZONTAL_OFFSET - centre_x;
+    delta_y = p.y + win_rect.top + VERTICAL_OFFSET - centre_y;
     
     delta_x = (delta_x * MOUSE_POS_MAX) / scr_width;
     delta_y = (delta_y * MOUSE_POS_MAX) / scr_height;
@@ -160,6 +164,7 @@ bool get_mouse_pos(uint16_t *ret_x, uint16_t *ret_y) {
 
     *ret_x = last_pos_x;
     *ret_y = last_pos_y;
+
     
     if (!SetCursorPos(centre_x, centre_y)) {
         printf("Error centring cursor position: %d\n", GetLastError());
