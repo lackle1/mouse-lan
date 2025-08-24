@@ -14,7 +14,7 @@ void handle_mouse_info(dp_mouse_info *packet) {
         printf("Error setting cursor position: %d\n", GetLastError());
     }
 
-    printf("Set cursor position to (%d, %d)\n", x, y);
+    //printf("Set cursor position to (%d, %d)\n", x, y);
 }
 
 bool initialise_client(char *server_addr, SOCKET *socketptr) {
